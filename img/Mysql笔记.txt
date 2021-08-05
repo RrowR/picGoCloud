@@ -1,0 +1,145 @@
+1.数据库的相关概念
+	1.1 数据
+		1，定义：描述事务的符号
+		2，表达形式：多种表现形式：文本，图形，音频，视频
+		3，数据库对图片，音频 视频的存储是可以
+				但是在开发中，我们一般只存路径
+	1.2 数据库（Database, DB）
+		1，粮库:车库
+		2，存放数据的仓库 存放在计算机中，按照一定格式存放 ?可为用户共享
+	1.3数据库管理系统（Database Management System, DBMS）
+		1，如何科学的组织和存储数据，如何高效的获取和维护数据，靠数据库管理系统完成
+		2，Oracle MySQL SQL Server DB2 FoxPro Access Sqlite
+	1.4 数据库应用程序（DBAS）
+		1，在数据库管理系统基础上，使用数据库管理系统的语法，开发的直接面对最终用户的应用程序
+		2，学生管理系统、人事管理系统、图书管理系统	
+	1.5数据库管理员（Database Administrator, DBA）
+		1，数据库管理系统的操作者	
+	1.6最终用户
+		1，数据库应用程序的使用者
+	1.7 数据库系统
+		1，数据库+数据库管理系统+数据库应用程序+最终用户
+	1.8 数据库的发展阶段
+		1，网状数据库 线型
+		2，层次数据库Tree
+		3，关系数据库 表与表之间有关系 
+			采用关系[二维表]结构存储与管理数据
+			采用结构化查询语言(sql)作为客户端数据库服务器间沟通的桥梁
+			目前主流的数据库技术	
+	1.9 NOSQL数据库--概念
+		1，Not only sql数据库 泛指非关系数据库。如
+		 落地的产品 MongoDB,Redis
+	1.10 市场上流行的关系型数据库
+			数据库	厂商
+			Oracle	甲骨文公司
+			MySQL	MySQL-甲骨文公司
+			SQLServer	Microsoft
+			DB2	      IBM
+			Sqlite	 RichardHipp
+2.安装
+	见文档
+3.数据库相关基础操作		
+	3.1启动|停止
+		启动: 使用powershell  net start mysql
+		停止: 使用powershell   net stop mysql
+	3.2 登陆|退出
+		mysql  -uroot -p123456
+		quit
+	3.3显示所有数据库
+		show databases;
+	3.4默认的几个数据库说明
+		3.4.1information_schema
+			元数据的库
+		3.4.2mysql
+			这个是mysql的核心数据库，主要负责存储数据库的用户、权限设置、关键字等mysql自己需要使用的控制和管理信息。不可以删除，
+		3.4.3performance_schema
+			mysql 5.5 版本 新增了一个性能优化的引擎： PERFORMANCE_SCHEMA这个功能默认是关闭的：
+			需要设置参数： performance_schema  才可以启动该功能，这个参数是静态参数，只能写在
+			my.cnf 中 不能动态修改。
+			windows里面叫 my.ini文件    C:\ProgramData\MySQL\MySQL Server 5.7   【默认在这个目录】
+			linux里面叫my.cnf文件
+		3.4.4sys
+			通过这个库可以快速的了解系统的元数据信息
+			这个库确实可以方便DBA发现数据库的很多信息，解决性能瓶颈都提供了巨大帮助
+	3.5使用某一个数据库
+		语法 use 数据库名
+			 use mysql
+	3.6修改密码
+		语法
+		-- 1使用mysql数据库
+		use mysql;
+		-- 2修改密码命令(将root用户的密码修改为123456)
+		update mysql.user set authentication_string=PASSWORD('123456') where user='root';
+		-- 3 刷新
+		flush privileges;
+	3.7 创建用户
+		3.7.1命令
+			CREATE USER 'username'@'host' IDENTIFIED BY 'password';
+
+		3.7.2说明
+			username：你将创建的用户名
+			host：指定该用户在哪个主机上可以登陆，如果是本地用户可用localhost，如果想让该用户可以从任意远程主机登陆，可以使用通配符%
+			password：该用户的登陆密码，密码可以为空，如果为空则该用户可以不需要密码登陆服务器
+		3.7.3例子
+			CREATE USER 'dog'@'localhost' IDENTIFIED BY '123456';
+			CREATE USER 'pig'@'192.168.1.101' IDENDIFIED BY '123456';
+			CREATE USER 'pig'@'%' IDENTIFIED BY '123456';
+			CREATE USER 'pig'@'%' IDENTIFIED BY '';
+			CREATE USER 'pig'@'%';	
+	3.8给用户授权
+		3.8.1命令
+		GRANT [privileges] ON databasename.tablename TO 'username'@'host'
+		3.8.2说明
+			privileges：用户的操作权限，如SELECT，INSERT，UPDATE等，如果要授予所的权限则使用ALL
+			databasename：数据库名
+			tablename：表名，如果要授予该用户对所有数据库和表的相应操作权限则可用*表示，如*.*
+		3.8.3例子
+			GRANT SELECT, INSERT ON test.user TO 'pig'@'%';
+			GRANT ALL ON *.* TO 'pig'@'%'; 
+			GRANT ALL ON maindataplus.* TO 'pig'@'%';
+		3.8.4注意
+			用以上命令授权的用户不能给其它用户授权，如果想让该用户可以授权，用以下命令:
+			GRANT privileges ON databasename.tablename TO 'username'@'host' WITH GRANT OPTION;			
+	3.9创建一个数据库
+		-- 创建数据库有两种方式：
+		-- 第一种 语法如下
+		-- 注意：<>里面的内容都是可变的
+		-- create database <数据库名称>;
+		-- 例如
+		create database whpowernode;
+		-- 第二种 语法如下
+		-- if not exists 创建之前会做check操作，如果数据库名称在MySQL数据库管理系统中不存在才创建
+		-- charset default 为数据库指定默认编码
+		-- create database if not exists <数据库名称>  default charset  <数据库字符集编码>;
+		-- 例如：
+		create database if not exists whpowernode default charset UTF8;
+		create database if not exists whpowernode default charset UTF8MB4;
+		-- UTF8和UTF8MB4区别？
+		-- 绝大多数情况下使用UTF8编码的字符集一个汉字占据3个字符，但是有极少数情况下一个汉字占据4个字符
+		-- 占据4个字符的汉字不能使用UTF8存储，必须使用UTF8MB4存储
+		-- UTF8MB4字符集编码表示一个汉字最多占据4个字符  M Most  B Byte 
+		-- 注意：创建数据库指定的字符集编码必须跟MySQL数据库里面的my.ini字符集编码保持一致	
+		
+	3.10修改默认编码[找到my.ini文件]
+		在哪？
+			windows: C:\ProgramData\MySQL\MySQL Server 5.7\my.ini
+			linux:  var\conf\my.cnf
+		怎么改
+			66 line default-character-set=utf8mb4
+			99 line character-set-server=utf8mb4
+		
+	3.11删除一个数据库
+		-- 第一种方式 语法：
+		-- drop database <数据库名称>;
+		-- 例如：
+		drop database whpowernode;
+		-- 第二种方式 语法：
+		-- 删除之前先判断 存在才删除
+		-- drop database if exists <数据库名称>;
+		-- 例如：
+		drop database if exists whpowernode;	
+		
+		
+		
+		
+		
